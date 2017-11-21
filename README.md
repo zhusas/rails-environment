@@ -5,6 +5,5 @@ It automatically completes the dependency installation of the rails environment.
 
 It passed the test on Ubuntu14&Ubuntu16
 
-How to run?
-
+## How to run?
 bash rails-environment.sh
