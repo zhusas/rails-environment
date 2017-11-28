@@ -46,33 +46,13 @@ echo "============================================="
 
 sleep 3
 
-#Optimize the system kernel parameters
+#Optimize the system limits.conf parameters
 cat >>/etc/security/limits.conf<<eof
 * soft nproc 65535
 * hard nproc 65535
 * soft nofile 65535
 * hard nofile 65535
 eof
-
-cat >>/etc/sysctl.conf<<eof
-fs.file-max=262140
-vm.swappiness = 0
-net.ipv4.neigh.default.gc_stale_time=120
-net.ipv4.conf.all.rp_filter=0
-net.ipv4.conf.default.rp_filter=0
-net.ipv4.conf.default.arp_announce = 2
-net.ipv4.conf.all.arp_announce=2
-net.ipv4.tcp_max_tw_buckets = 5000
-net.ipv4.tcp_syncookies = 1
-net.ipv4.tcp_max_syn_backlog = 8192
-net.ipv4.tcp_synack_retries = 2
-net.ipv4.conf.lo.arp_announce=2
-vm.overcommit_memory = 1
-net.core.somaxconn = 2000
-net.ipv4.tcp_tw_reuse = 1
-kernel.threads-max = 254737
-eof
-sysctl -p
 
 #install Ubuntu packages
 echo "install Ubuntu packages..."
@@ -112,7 +92,6 @@ apt-get install -y software-properties-common wget unzip vim build-essential ope
 
 echo "---------------------------------------------------------------------------"
 echo ""
-echo ""
 
 #Ubuntu14 system features, New users need password free installation
 if [ 'grep "trusty" /etc/lsb-release' ];then
@@ -120,17 +99,13 @@ if [ 'grep "trusty" /etc/lsb-release' ];then
 
 fi
 
-
 #Install Ruby Version Manager 
-
 install_rvm() {
 echo "Install Ruby Version Manager" 
 echo "---------------------------------------------------------------------------" 
-
 su -c "curl -sSL https://rvm.io/mpapis.asc | gpg2 --import -" $RUBY_USER
 cd /home/$RUBY_USER
 su -c "curl -L https://get.rvm.io | bash -s stable" $RUBY_USER
-
 
 if [ whoami = 'root' ];then
     source /etc/profile.d/rvm.sh
@@ -141,7 +116,6 @@ fi
 #Replacement of RVM mirror from china
 su -c 'echo "ruby_url=http://mirrors.ustc.edu.cn/ruby" > ~/.rvm/user/db' $RUBY_USER
 
-
 su - $RUBY_USER -c "rvm requirements"
 
 #Install ruby
@@ -149,7 +123,7 @@ su - $RUBY_USER -c "rvm install $RUBY_VERSION --disable-binary"
 su - $RUBY_USER -c "rvm use $RUBY_VERSION --default"
 
 #Replacement of gem mirror from china
-su - $RUBY_USER -c "gem sources --add https://gems.ruby-china.org/ --remove https://        rubygems.org/"
+su - $RUBY_USER -c "gem sources --add https://gems.ruby-china.org/ --remove https://rubygems.org/"
 
 su - $RUBY_USER -c "gem install bundler"
 su - $RUBY_USER -c "gem install rails"
@@ -163,23 +137,28 @@ su - $RUBY_USER -c "rails -v"
 }
 
 install_rbenv() {
-    su - $RUBY_USER -c "git clone https://github.com/sstephenson/rbenv.git ~/.rbenv"
-    su - $RUBY_USER -c "git clone git://github.com/sstephenson/ruby-build.git ~/.rbenv/     plugins/ruby-build"
-    su - $RUBY_USER -c "git clone git://github.com/jamis/rbenv-gemset.git  ~/.rbenv/plugins/rbenv-gemset"
-    su - $RUBY_USER -c "git clone git://github.com/sstephenson/rbenv-gem-rehash.git ~/.     rbenv/plugins/rbenv-gem-rehash"
-    su - $RUBY_USER -c "git clone git://github.com/rkh/rbenv-update.git ~/.rbenv/plugins/   rbenv-update"
-    su - $RUBY_USER -c "git clone git://github.com/AndorChen/rbenv-china-mirror.git ~/.     rbenv/plugins/rbenv-china-mirror"
-    su - $RUBY_USER -c "echo 'export PATH="/home/$RUBY_USER/.rbenv/bin:$PATH"' >> ~/.bashrc"
-    echo 'eval "$(rbenv init -)"' >> /home/$RUBY_USER/.bashrc
-
-    echo ""
-    echo  "Please do the following steps:"
-    echo ""
-    echo "1.su - $RUBY_USER"
-    echo "2.rbenv install $RUBY_VERSION"
-    echo "3.rbenv global $RUBY_VERSION && rbenv rehash"
-    echo "4.gem install bundle"
-    echo "5.gem install rails"
+su - $RUBY_USER -c "git clone https://github.com/sstephenson/rbenv.git ~/.rbenv"
+su - $RUBY_USER -c "git clone git://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build"
+su - $RUBY_USER -c "git clone git://github.com/jamis/rbenv-gemset.git  ~/.rbenv/plugins/rbenv-gemset"
+su - $RUBY_USER -c "git clone git://github.com/sstephenson/rbenv-gem-rehash.git ~/.rbenv/plugins/rbenv-gem-rehash"
+su - $RUBY_USER -c "git clone git://github.com/rkh/rbenv-update.git ~/.rbenv/plugins/rbenv-update"
+su - $RUBY_USER -c "git clone git://github.com/AndorChen/rbenv-china-mirror.git ~/.rbenv/plugins/rbenv-china-mirror"
+su - $RUBY_USER -c "echo 'export PATH="/home/$RUBY_USER/.rbenv/bin:$PATH"' >> ~/.bashrc"
+echo 'eval "$(rbenv init -)"' >> /home/$RUBY_USER/.bashrc	
+su - $RUBY_USER -c "source /home/$RUBY_USER/.bashrc"
+su - $RUBY_USER -c "/home/$RUBY_USER/.rbenv/bin/rbenv install $RUBY_VERSION"
+su - $RUBY_USER -c "/home/$RUBY_USER/.rbenv/bin/rbenv global $RUBY_VERSION"
+su - $RUBY_USER -c "/home/$RUBY_USER/.rbenv/bin/rbenv rehash"
+su - $RUBY_USER -c "/home/$RUBY_USER/.rbenv/shims/gem sources --add https://gems.ruby-china.org/ --remove https://rubygems.org/"
+su - $RUBY_USER -c "/home/$RUBY_USER/.rbenv/shims/gem install bundle"
+su - $RUBY_USER -c "/home/$RUBY_USER/.rbenv/shims/gem install rails"
+echo ""
+echo  "The following components are installed:"
+echo ""
+su - $RUBY_USER -c "/home/$RUBY_USER/.rbenv/shims/ruby -v"
+su - $RUBY_USER -c "/home/$RUBY_USER/.rbenv/shims/gem -v"
+su - $RUBY_USER -c "/home/$RUBY_USER/.rbenv/shims/bundle -v"
+su - $RUBY_USER -c "/home/$RUBY_USER/.rbenv/shims/rails -v"
 }
 
 if [ $RUBY_VM = 'rbenv' ];then
@@ -192,5 +171,5 @@ fi
 sed -i "s@$RUBY_USER ALL=(ALL) NOPASSWD:ALL@@g" /etc/sudoers
 
 echo "--------------------------- Install Successed -----------------------------" 
-echo ""
-echo "Rbenv and RVM are two in one update, but not perfect, and maybe ansible is a better choice." 
+echo "--------------------------- Enjoy your fun!!!!! ---------------------------" 
+
