@@ -176,7 +176,7 @@ install_rbenv() {
     echo  "Please do the following steps:"
     echo ""
     echo "1.su - $RUBY_USER"
-    echo "2.rbenv installl $RUBY_VERSION"
+    echo "2.rbenv install $RUBY_VERSION"
     echo "3.rbenv global $RUBY_VERSION && rbenv rehash"
     echo "4.gem install bundle"
     echo "5.gem install rails"
